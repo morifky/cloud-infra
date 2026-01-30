@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "tripla-apps.name" . }}-backend
+  namespace: {{ include "tripla-apps.namespace" . }}
+  labels:
+    {{- include "tripla-apps.labels" . | nindent 4 }}
+  annotations:
+    {{- include "tripla-apps.annotations" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.backend.replicas }}
+  strategy:
+    {{- toYaml .Values.backend.strategy | nindent 4 }}
+  selector:
+    matchLabels:
+      app: backend
+      {{- include "tripla-apps.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        app: backend
+        {{- include "tripla-apps.selectorLabels" . | nindent 8 }}
+      annotations:
+        {{- include "tripla-apps.annotations" . | nindent 8 }}
+    spec:
+      containers:
+        - name: backend
+          image: {{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}
+          {{- if .Values.backend.args }}
+          args:
+            {{- toYaml .Values.backend.args | nindent 12 }}
+          {{- end }}
+          ports:
+            - containerPort: {{ .Values.backend.port }}
+          
+          {{- with .Values.backend.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          
+          {{- with .Values.backend.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+
+          envFrom:
+            {{- if .Values.backend.config }}
+            - configMapRef:
+                name: {{ include "tripla-apps.name" . }}-backend
+            {{- end }}
+            {{- if .Values.backend.secrets }}
+            - secretRef:
+                name: {{ include "tripla-apps.name" . }}-backend
+            {{- end }}
+            {{- with .Values.backend.envFrom }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}

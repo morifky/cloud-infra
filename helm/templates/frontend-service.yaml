@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "tripla-apps.name" . }}-frontend-svc
+  namespace: {{ include "tripla-apps.namespace" . }}
+  labels:
+    {{- include "tripla-apps.labels" . | nindent 4 }}
+  annotations:
+    {{- include "tripla-apps.annotations" . | nindent 4 }}
+spec:
+  type: {{ .Values.frontend.service.type }}
+  ports:
+    - port: {{ .Values.frontend.service.port }}
+      targetPort: {{ .Values.frontend.port }}
+      protocol: TCP
+  selector:
+    app: frontend
+    {{- include "tripla-apps.selectorLabels" . | nindent 4 }}
