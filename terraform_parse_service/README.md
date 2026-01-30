@@ -41,6 +41,18 @@ npm start
 ```
 The server will be available at `http://localhost:3000`.
 
+### API Documentation
+
+The service includes an interactive Swagger UI for exploring and testing the API endpoints.
+
+Once the service is running, you can access the documentation at:
+`http://localhost:3000/apidocs`
+
+This UI allows you to:
+- View all available API endpoints.
+- See the expected request schemas (JSON payloads).
+- Try out the API directly from your browser.
+
 ---
 
 ## Usage Examples

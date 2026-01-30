@@ -1,4 +1,4 @@
-
+import { z } from 'zod';
 import Fastify from 'fastify';
 import { serializerCompiler, validatorCompiler, ZodTypeProvider, jsonSchemaTransform } from 'fastify-type-provider-zod';
 import fastifySwagger from '@fastify/swagger';
@@ -17,37 +17,41 @@ app.setSerializerCompiler(serializerCompiler);
 
 const server = app.withTypeProvider<ZodTypeProvider>();
 
-server.register(fastifySwagger, {
-  openapi: {
-    info: {
-      title: 'Terraform Parse Service',
-      description: 'API to generate Terraform HCL files',
-      version: '1.0.0',
-    },
-    servers: [],
-  },
-  transform: jsonSchemaTransform,
-});
-
-server.register(fastifySwaggerUi, {
-  routePrefix: '/documentation',
-});
-
-server.post('/api/v1/aws/s3', {
-  schema: {
-    body: S3RequestDtoSchema,
-  },
-}, S3Controller.generate);
-
-server.post('/api/v1/aws/ec2', {
-  schema: {
-    body: Ec2RequestDtoSchema,
-  },
-}, generateEc2);
-
-
 const start = async () => {
   try {
+    await server.register(fastifySwagger, {
+      openapi: {
+        info: {
+          title: 'Terraform Parse Service',
+          description: 'API to generate Terraform HCL files',
+          version: '1.0.0',
+        },
+        servers: [],
+      },
+      transform: jsonSchemaTransform,
+    });
+
+    await server.register(fastifySwaggerUi, {
+      routePrefix: '/apidocs',
+    });
+
+    server.post('/api/v1/aws/s3', {
+      schema: {
+        description: 'Generate Terraform S3 resource',
+        tags: ['S3'],
+        body: S3RequestDtoSchema,
+      },
+    }, S3Controller.generate);
+
+    server.post('/api/v1/aws/ec2', {
+      schema: {
+        description: 'Generate Terraform EC2 resource',
+        tags: ['EC2'],
+        body: Ec2RequestDtoSchema,
+      },
+    }, generateEc2);
+
+
     await server.listen({ port: 3000, host: '0.0.0.0' });
   } catch (err) {
     server.log.error(err);
